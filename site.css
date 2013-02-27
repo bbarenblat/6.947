@@ -1,0 +1,110 @@
+ /* site.css -- 6.947 CSS rules
+  * Copyright (C) 2013  Benjamin Barenblat <bbaren@mit.edu>
+  *
+  * This file is a part of 6.947.
+  *
+  * 6.947 is is free software: you can redistribute it and/or modify it under
+  * the terms of the GNU Affero General Public License as published by the Free
+  * Software Foundation, either version 3 of the License, or (at your option)
+  * any later version.
+  *
+  * 6.947 is distributed in the hope that it will be useful, but WITHOUT ANY
+  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for
+  * more details.
+  *
+  * You should have received a copy of the GNU Affero General Public License
+  * along with 6.947.  If not, see <http://www.gnu.org/licenses/>. */
+
+@import url("//bbaren.scripts.mit.edu/urweb/6.947/normalize.css");
+
+/* Base color: black
+ * Background color: white
+ * Highlight color: hsl(10, 90%, 35%);
+ * Hiding color: hsl(0, 0, 85%) */
+
+html {
+    font-family: "TeX Gyre Pagella", TeXGyrePagella, Palatino, "Palatino Linotype", serif;
+    background: white;
+}
+
+a:link, a:visited {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted hsl(0, 0%, 85%);
+}
+a:hover, a:active {
+    color: hsl(0, 90%, 35%);
+    border-bottom: 1px dotted hsl(340, 90%, 40%);
+}
+
+.smallCaps {
+    font-variant: small-caps;
+}
+
+.siteTitle,
+.content,
+.footer {
+    margin-left: 12.5%;
+}
+
+.content,
+.footer {
+    max-width: 70%;
+}
+
+.content p,
+.footer p {
+    max-width: 30em;
+    text-align: justify;
+}
+
+
+.siteTitle {
+    font-size: 4em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.siteTitle:after {
+    color: hsl(0, 0%, 85%);
+    content: " ❧";
+}
+.siteTitle a:link {
+    border-bottom: none;
+}
+
+ul.navBar {
+    list-style-type: none;
+    padding: 0 17%;
+    border-bottom: 1px solid black;
+}
+ul.navBar li {
+    display: inline;
+    margin-right: 1em;
+    padding: 0 0.5em;
+    border: 1px solid black;
+}
+ul.navBar li.active {
+    border-bottom: 1px solid white;
+}
+ul.navBar a:link {
+    border-bottom: none;
+}
+
+.content p:first-child:first-letter {
+    color: hsl(0, 90%, 35%);
+    font-size: 3.3em;
+    padding-right: 0.03em;
+    line-height: 1em;
+}
+
+.content:after {
+    margin-left: 0.75em;
+    color: hsl(0, 0%, 85%);
+    content: " ❦";
+}
+
+.footer {
+    margin-top: 3em;
+    color: hsl(0, 0%, 85%);
+}
