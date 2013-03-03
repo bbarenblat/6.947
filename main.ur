@@ -28,38 +28,9 @@ style content
 style footer
 
 
-(*********************************** Menus ***********************************)
-
-(* Generating nice menus is quite difficult in Ur/Web--there are a lot of links
-that the compiler needs to be convinced aren't broken.  The link scheme in this
-app is based on a variant 'pageName', which describes the name of the page.
-There's one value for each page. *)
-con pageName = variant (mapU unit [Main, Forum])
-
-(* 'getName' generates the link text given a 'pageName'. *)
-fun getName (n : pageName) : xbody =
-    match n { Main = fn ()  => <xml>Main</xml>,
-	      Forum = fn () => <xml>Forum</xml> }
-
-(* Now we can do the actual menu generation code. *)
-fun menu (current : pageName) : xbody =
-    let fun item (target : pageName) (page : unit -> transaction page) =
-    	    if Variant.eq current target
-    	    then <xml><li class={active}>{getName target}</li></xml>
-    	    else <xml><li><a link={page ()}>{getName target}</a></li></xml>
-    in
-	<xml>
-	  <ul class={navBar}>
-	    {item (make [#Main] ()) main}
-	    {item (make [#Forum] ()) forum}
-	  </ul>
-	</xml>
-    end
-
-
 (********************************* Template **********************************)
 
-and generic (pageName : option string) (menuAndContent : xbody) : xhtml [] [] =
+fun generic (pageName : option string) (content : xbody) : xhtml [] [] =
     let val titleString : string =
 	    case pageName of
 	      | None => "6.947 – Functional Programming Project Laboratory"
@@ -71,8 +42,7 @@ and generic (pageName : option string) (menuAndContent : xbody) : xhtml [] [] =
 	    <link rel="stylesheet" type="text/css" href="//bbaren.scripts.mit.edu/urweb/6.947/site.css"/>
 	  </head>
 	  <body>
-	    <h1 class={siteTitle}><a link={main ()}>6.947 &ndash; Functional Programming Project Laboratory</a></h1>
-	    {menuAndContent}
+	    {content}
 	    <div class={footer}>
 	      <p>
 		6.947 is free software: you can redistribute it and/or modify it under the terms of the <a href="//gnu.org/licenses/agpl"><span class={smallCaps}>gnu</span> Affero General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -92,11 +62,42 @@ and generic (pageName : option string) (menuAndContent : xbody) : xhtml [] [] =
     end
 
 
+(******************************* Page headings *******************************)
+
+(* Generating nice headings and menus is quite difficult in Ur/Web--there are a
+lot of links that the compiler needs to be convinced aren't broken.  The link
+scheme in this app is based on a variant 'pageName', which describes the name
+of the page.  There's one value for each page. *)
+
+con pageName = variant (mapU unit [Main, Forum])
+
+(* 'getName' generates the link text given a 'pageName'. *)
+fun getName (n : pageName) : xbody =
+    match n { Main = fn ()  => <xml>Main</xml>,
+	      Forum = fn () => <xml>Forum</xml> }
+
+(* Now we can do the actual title and menu generation code. *)
+fun header (current : pageName) : xbody =
+    let fun item (target : pageName) (page : unit -> transaction page) =
+    	    if Variant.eq current target
+    	    then <xml><li class={active}>{getName target}</li></xml>
+    	    else <xml><li><a link={page ()}>{getName target}</a></li></xml>
+    in
+	<xml>
+	  <h1 class={siteTitle}><a link={main ()}>6.947 &ndash; Functional Programming Project Laboratory</a></h1>
+	  <ul class={navBar}>
+	    {item (make [#Main] ()) main}
+	    {item (make [#Forum] ()) forum}
+	  </ul>
+	</xml>
+    end
+
+
 (*********************************** Pages ***********************************)
 
 and main () =
     return (generic None <xml>
-      {menu (make [#Main] ())}
+      {header (make [#Main] ())}
       <div class={content}>
 	<p>
 	  Like <a href="//web.mit.edu/6.115/www/">6.115</a>, 6.947 is a chance to remember why you came to <span class={smallCaps}>mit</span>: to learn and to build.
@@ -108,10 +109,11 @@ and main () =
 
 and forum () =
     return (generic (Some "Forum") <xml>
-      {menu (make [#Forum] ())}
+      {header (make [#Forum] ())}
       <div class={content}>
 	<p>
 	  Coming soon!
 	</p>
       </div>
     </xml>)
+
