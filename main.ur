@@ -16,16 +16,7 @@ details.
 You should have received a copy of the GNU Affero General Public License along
 with 6.947.  If not, see <http://www.gnu.org/licenses/>. *)
 
-
-(********************************** Styles ***********************************)
-
-style smallCaps
-
-style siteTitle
-style navBar
-style active			(* TODO: Use for active menu items *)
-style content
-style footer
+open Styles
 
 
 (********************************* Template **********************************)
@@ -107,13 +98,10 @@ and main () =
       </div>
     </xml>)
 
-and forum () =
+and forum () = forumWorker Forum.main
+and forumWorker (f : unit -> xbody) =
     return (generic (Some "Forum") <xml>
       {header (make [#Forum] ())}
-      <div class={content}>
-	<p>
-	  Coming soon!
-	</p>
-      </div>
+      {f ()}
     </xml>)
 

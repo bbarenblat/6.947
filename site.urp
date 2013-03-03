@@ -4,12 +4,14 @@ allow url //www.youtube.com/watch?v=OyRW9uFSmh0
 allow url //bbaren.scripts.mit.edu/urweb/6.947/site.css
 allow url //web.mit.edu/6.115/www/
 allow url //gnu.org/licenses/agpl
-rewrite style Main/smallCaps smallCaps
-rewrite style Main/siteTitle siteTitle
-rewrite style Main/navBar navBar
-rewrite style Main/active active
-rewrite style Main/content content
-rewrite style Main/footer footer
+rewrite style Styles/smallCaps smallCaps
+rewrite style Styles/siteTitle siteTitle
+rewrite style Styles/navBar navBar
+rewrite style Styles/active active
+rewrite style Styles/content content
+rewrite style Styles/footer footer
 library meta
+library forum
 
+styles
 main
