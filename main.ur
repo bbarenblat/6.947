@@ -30,7 +30,7 @@ fun generic (pageName : option string) (content : xbody) : xhtml [] [] =
 	<xml>
 	  <head>
 	    <title>{[titleString]}</title>
-	    <link rel="stylesheet" type="text/css" href="//bbaren.scripts.mit.edu/urweb/6.947/site.css"/>
+	    <link rel="stylesheet" type="text/css" href="//bbaren.scripts.mit.edu/urweb/6.947-static/site.css"/>
 	  </head>
 	  <body>
 	    {content}
@@ -53,42 +53,11 @@ fun generic (pageName : option string) (content : xbody) : xhtml [] [] =
     end
 
 
-(******************************* Page headings *******************************)
-
-(* Generating nice headings and menus is quite difficult in Ur/Web--there are a
-lot of links that the compiler needs to be convinced aren't broken.  The link
-scheme in this app is based on a variant 'pageName', which describes the name
-of the page.  There's one value for each page. *)
-
-con pageName = variant (mapU unit [Main, Forum])
-
-(* 'getName' generates the link text given a 'pageName'. *)
-fun getName (n : pageName) : xbody =
-    match n { Main = fn ()  => <xml>Main</xml>,
-	      Forum = fn () => <xml>Forum</xml> }
-
-(* Now we can do the actual title and menu generation code. *)
-fun header (current : pageName) : xbody =
-    let fun item (target : pageName) (page : unit -> transaction page) =
-    	    if Variant.eq current target
-    	    then <xml><li class={active}>{getName target}</li></xml>
-    	    else <xml><li><a link={page ()}>{getName target}</a></li></xml>
-    in
-	<xml>
-	  <h1 class={siteTitle}><a link={main ()}>6.947 &ndash; Functional Programming Project Laboratory</a></h1>
-	  <ul class={navBar}>
-	    {item (make [#Main] ()) main}
-	    {item (make [#Forum] ()) forum}
-	  </ul>
-	</xml>
-    end
-
-
 (*********************************** Pages ***********************************)
 
 and main () =
     return (generic None <xml>
-      {header (make [#Main] ())}
+      {Menu.header (make [#Main] ())}
       <div class={content}>
 	<p>
 	  Like <a href="//web.mit.edu/6.115/www/">6.115</a>, 6.947 is a chance to remember why you came to <span class={smallCaps}>mit</span>: to learn and to build.
@@ -101,7 +70,7 @@ and main () =
 and forum () = forumWorker Forum.main
 and forumWorker (f : unit -> xbody) =
     return (generic (Some "Forum") <xml>
-      {header (make [#Forum] ())}
+      {Menu.header (make [#Forum] ())}
       {f ()}
     </xml>)
 

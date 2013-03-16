@@ -1,7 +1,9 @@
-prefix /urweb/6.947/site.exe/
+prefix /urweb/6.947/
+allow url /urweb/6.947/index
+allow url /urweb/6.947/forum
 allow url file:///afs/athena.mit.edu/user/b/b/bbaren/web_scripts/urweb/6.947/
 allow url //www.youtube.com/watch?v=OyRW9uFSmh0
-allow url //bbaren.scripts.mit.edu/urweb/6.947/site.css
+allow url //bbaren.scripts.mit.edu/urweb/6.947-static/site.css
 allow url //web.mit.edu/6.115/www/
 allow url //gnu.org/licenses/agpl
 rewrite style Styles/smallCaps smallCaps
@@ -10,8 +12,11 @@ rewrite style Styles/navBar navBar
 rewrite style Styles/active active
 rewrite style Styles/content content
 rewrite style Styles/footer footer
+rewrite url Main/main index
+rewrite url Main/*
 library meta
 library forum
 
 styles
+menu
 main
