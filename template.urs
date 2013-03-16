@@ -1,4 +1,4 @@
-(* Menu -- site menu
+(* Template -- site templates
 Copyright (C) 2013  Benjamin Barenblat <bbaren@mit.edu>
 
 This file is a part of 6.947.
@@ -16,6 +16,6 @@ details.
 You should have received a copy of the GNU Affero General Public License along
 with 6.947.  If not, see <http://www.gnu.org/licenses/>. *)
 
-(* Given the name of the page we're currently on, produces a header and menu
-for the site. *)
-val header : Config.pageName -> xbody
+val generic : option string	(* an optional page title *)
+	      -> xbody		(* the page content *)
+	      -> page

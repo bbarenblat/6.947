@@ -25,30 +25,25 @@ and it's no more unsafe than anything you'd do in a "normal" Web framework. *)
 
 open Styles
 
-con pageName = variant (mapU unit [Main, Forum])
-
 (* Generates the link text *)
-fun getName (n : pageName) : xbody =
+fun getName (n : Config.pageName) : xbody =
     match n { Main = fn ()  => <xml>Main</xml>,
 	      Forum = fn () => <xml>Forum</xml> }
 
 (* Generates the link URL *)
-fun getUrl (n : pageName) : url =
-    let val base = "/urweb/6.947"
-    in
-	match n { Main = fn ()  => bless (base ^ "/index"),
-		  Forum = fn () => bless (base ^ "/forum") }
-    end
+fun getUrl (n : Config.pageName) : url =
+    match n { Main = fn ()  => bless (Config.baseUrlS ^ "/index"),
+	      Forum = fn () => bless (Config.baseUrlS ^ "/forum") }
 
 (* Actual title and menu generation code *)
-fun header (current : pageName) : xbody =
-    let fun item (target : pageName) =
+fun header (current : Config.pageName) : xbody =
+    let fun item (target : Config.pageName) =
     	    if Variant.eq current target
     	    then <xml><li class={active}>{getName target}</li></xml>
     	    else <xml><li><a href={getUrl target}>{getName target}</a></li></xml>
     in
 	<xml>
-	  <h1 class={siteTitle}><a href={getUrl (make [#Main] ())}>6.947 &ndash; Functional Programming Project Laboratory</a></h1>
+	  <h1 class={siteTitle}><a href={getUrl (make [#Main] ())}>{Config.siteTitle}</a></h1>
 	  <ul class={navBar}>
 	    {item (make [#Main] ())}
 	    {item (make [#Forum] ())}

@@ -1,4 +1,4 @@
-(* Menu -- site menu
+(* Config -- site-wide configuration
 Copyright (C) 2013  Benjamin Barenblat <bbaren@mit.edu>
 
 This file is a part of 6.947.
@@ -16,6 +16,12 @@ details.
 You should have received a copy of the GNU Affero General Public License along
 with 6.947.  If not, see <http://www.gnu.org/licenses/>. *)
 
-(* Given the name of the page we're currently on, produces a header and menu
-for the site. *)
-val header : Config.pageName -> xbody
+(* The base URL for the site *)
+val baseUrlS : string
+
+(* The name of the site *)
+val siteTitle : xbody
+
+(* The menu scheme in this app is based on a variant 'pageName', which
+describes the name of the page.  There's one value for each page. *)
+con pageName = variant (mapU unit [Main, Forum])

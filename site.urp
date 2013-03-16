@@ -17,6 +17,8 @@ rewrite url Main/*
 library meta
 library forum
 
+config
 styles
+template
 menu
 main
