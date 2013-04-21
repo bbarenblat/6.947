@@ -18,6 +18,16 @@ with 6.947.  If not, see <http://www.gnu.org/licenses/>. *)
 
 open Styles
 
+structure Forum = Forum.Make(struct
+        fun generic (pageName : option string) (content : xbody) : page =
+	    Template.generic pageName <xml>
+	      {Menu.header (make [#Forum] ())}
+	      {content}
+	    </xml>
+    end)
+
+val forum = Forum.main
+
 fun main () =
     return (Template.generic None <xml>
       {Menu.header (make [#Main] ())}
@@ -29,11 +39,3 @@ fun main () =
 	</p>
       </div>
     </xml>)
-
-and forum () = forumWorker Forum.main
-and forumWorker (f : unit -> xbody) =
-    return (Template.generic (Some "Forum") <xml>
-      {Menu.header (make [#Forum] ())}
-      {f ()}
-    </xml>)
-

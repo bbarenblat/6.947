@@ -16,13 +16,21 @@ details.
 You should have received a copy of the GNU Affero General Public License along
 with 6.947.  If not, see <http://www.gnu.org/licenses/>. *)
 
+functor Make(Template : sig
+    val generic : option string -> xbody -> page
+end) = struct
+
 open Styles
 
-fun main () : xbody =
-    <xml>
-      <div class={content}>
-	<p>
-	  Coming soon!
-	</p>
-      </div>
-    </xml>
+fun main () : transaction page =
+    return (
+        Template.generic (Some "Forum") <xml>
+	  <div class={content}>
+	    <p>
+	      Coming soon!
+	    </p>
+	  </div>
+	</xml>
+    )
+
+end

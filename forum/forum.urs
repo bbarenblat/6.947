@@ -16,4 +16,10 @@ details.
 You should have received a copy of the GNU Affero General Public License along
 with 6.947.  If not, see <http://www.gnu.org/licenses/>. *)
 
-val main : unit -> xbody
+functor Make(Template : sig
+    val generic : option string -> xbody -> page
+end) : sig
+
+val main : unit -> transaction page
+
+end
