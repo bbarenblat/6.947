@@ -48,7 +48,7 @@ fun generic (pageName : option string) (content : xbody) : xhtml [] [] =
 	  </p>
 
 	  <p>
-	    You can get the 6.947 source code <a href="file:///afs/athena.mit.edu/user/b/b/bbaren/web_scripts/urweb/6.947/">via AFS</a>.
+	    You can get the 6.947 source code <a href="//benjamin.barenblat.name/hg/6.947/">via Mercurial</a>.
 	  </p>
 	</div>
       </body>
