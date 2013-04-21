@@ -16,6 +16,7 @@ rewrite url Main/main index
 rewrite url Main/*
 library meta
 library forum
+sql setup.sql
 
 config
 styles

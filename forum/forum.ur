@@ -22,15 +22,31 @@ end) = struct
 
 open Styles
 
+table question : { Id : int,
+		   Body : string
+		 } PRIMARY KEY Id
+sequence questionIdS
+
 fun main () : transaction page =
+    newestQuestions <- queryX (SELECT * FROM question) (fn row =>
+        <xml>
+	  <p>{[row.Question.Body]}</p>
+	</xml>);
     return (
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
-	    <p>
-	      Coming soon!
-	    </p>
+	    <p>All questions:</p>
+	    {newestQuestions}
+	    <p>Ask a new question:</p>
+	    <form><textbox {#Body} /><submit action={ask} value="Ask" /></form>
 	  </div>
 	</xml>
     )
+
+and ask submission =
+    id <- nextval questionIdS;
+    dml (INSERT INTO question (Id, Body)
+	 VALUES ({[id]}, {[submission.Body]}));
+    main ()
 
 end
