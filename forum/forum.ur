@@ -29,13 +29,27 @@ table question : { Id : int,
 		 } PRIMARY KEY Id
 sequence questionIdS
 
+fun showAskerOpt (askerOpt : option string) : string =
+    case askerOpt of
+	None => "Anonymous"
+      | Some nam => nam
+
+fun readAskerOpt (text : string) : option string =
+    case text of
+	"Anonymous" => None
+      | nam => Some nam
+
+(* Grabs real name out of MIT certificate. *)
+val getName = getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
+
 fun prettyPrintQuestion row : xbody =
     <xml>
-      <p>{[row.Question.Title]}: {[row.Question.Body]} (asked by {[row.Question.Asker]})</p>
+      <p>{[row.Question.Title]}: {[row.Question.Body]} (asked by {[showAskerOpt row.Question.Asker]})</p>
     </xml>
 
 fun main () : transaction page =
     newestQuestions <- queryX (SELECT * FROM question) prettyPrintQuestion;
+    askerOpt <- getName;
     return (
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
@@ -45,6 +59,11 @@ fun main () : transaction page =
 	    <form>
 	      <textbox {#Title} size=80 /><br />
 	      <textarea {#Body} rows=12 cols=80 /><br />
+	      Asking as:
+	        <select {#Asker}>
+		  <option>{[showAskerOpt askerOpt]}</option>
+		  <option>Anonymous</option>
+		</select>
 	      <submit action={ask} value="Ask" />
 	    </form>
 	  </div>
@@ -54,7 +73,7 @@ fun main () : transaction page =
 and ask submission =
     id <- nextval questionIdS;
     dml (INSERT INTO question (Id, Title, Body, Asker)
-	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[Some "test user"]}));
+	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readAskerOpt submission.Asker]}));
     main ()
 
 end
