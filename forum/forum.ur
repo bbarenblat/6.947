@@ -23,30 +23,38 @@ end) = struct
 open Styles
 
 table question : { Id : int,
-		   Body : string
+		   Title : string,
+		   Body : string,
+		   Asker : option string (* 'None' if anonymous *)
 		 } PRIMARY KEY Id
 sequence questionIdS
 
+fun prettyPrintQuestion row : xbody =
+    <xml>
+      <p>{[row.Question.Title]}: {[row.Question.Body]} (asked by {[row.Question.Asker]})</p>
+    </xml>
+
 fun main () : transaction page =
-    newestQuestions <- queryX (SELECT * FROM question) (fn row =>
-        <xml>
-	  <p>{[row.Question.Body]}</p>
-	</xml>);
+    newestQuestions <- queryX (SELECT * FROM question) prettyPrintQuestion;
     return (
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
 	    <p>All questions:</p>
 	    {newestQuestions}
 	    <p>Ask a new question:</p>
-	    <form><textbox {#Body} /><submit action={ask} value="Ask" /></form>
+	    <form>
+	      <textbox {#Title} size=80 /><br />
+	      <textarea {#Body} rows=12 cols=80 /><br />
+	      <submit action={ask} value="Ask" />
+	    </form>
 	  </div>
 	</xml>
     )
 
 and ask submission =
     id <- nextval questionIdS;
-    dml (INSERT INTO question (Id, Body)
-	 VALUES ({[id]}, {[submission.Body]}));
+    dml (INSERT INTO question (Id, Title, Body, Asker)
+	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[Some "test user"]}));
     main ()
 
 end
