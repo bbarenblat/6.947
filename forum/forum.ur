@@ -21,30 +21,21 @@ functor Make(Template : sig
 end) = struct
 
 open Styles
+open Asker
 
 table question : { Id : int,
 		   Title : string,
 		   Body : string,
-		   Asker : option string (* 'None' if anonymous *)
+		   Asker : asker
 		 } PRIMARY KEY Id
 sequence questionIdS
-
-fun showAskerOpt (askerOpt : option string) : string =
-    case askerOpt of
-	None => "Anonymous"
-      | Some nam => nam
-
-fun readAskerOpt (text : string) : option string =
-    case text of
-	"Anonymous" => None
-      | nam => Some nam
 
 (* Grabs real name out of MIT certificate. *)
 val getName = getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
 
 fun prettyPrintQuestion row : xbody =
     <xml>
-      <p>{[row.Question.Title]}: {[row.Question.Body]} (asked by {[showAskerOpt row.Question.Asker]})</p>
+      <p>{[row.Question.Title]}: {[row.Question.Body]} (asked by {[row.Question.Asker]})</p>
     </xml>
 
 fun main () : transaction page =
@@ -61,7 +52,7 @@ fun main () : transaction page =
 	      <textarea {#Body} rows=12 cols=80 /><br />
 	      Asking as:
 	        <select {#Asker}>
-		  <option>{[showAskerOpt askerOpt]}</option>
+		  <option>{[askerOpt]}</option>
 		  <option>Anonymous</option>
 		</select>
 	      <submit action={ask} value="Ask" />
@@ -73,7 +64,7 @@ fun main () : transaction page =
 and ask submission =
     id <- nextval questionIdS;
     dml (INSERT INTO question (Id, Title, Body, Asker)
-	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readAskerOpt submission.Asker]}));
+	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readError submission.Asker]}));
     main ()
 
 end
