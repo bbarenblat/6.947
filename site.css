@@ -21,7 +21,8 @@
 /* Base color: black
  * Background color: white
  * Highlight color: hsl(10, 90%, 35%);
- * Hiding color: hsl(0, 0, 85%) */
+ * Mute color: hsl(0, 0%, 65%);
+ * Hiding color: hsl(0, 0%, 85%) */
 
 html {
     font-family: "TeX Gyre Pagella", TeXGyrePagella, Palatino, "Palatino Linotype", serif;

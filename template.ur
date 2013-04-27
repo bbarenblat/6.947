@@ -34,6 +34,7 @@ fun generic (pageName : option string) (content : xbody) : xhtml [] [] =
       <head>
 	{pageTitleTag pageName}
 	<link rel="stylesheet" type="text/css" href="//bbaren.scripts.mit.edu/urweb/6.947-static/site.css"/>
+	<link rel="stylesheet" type="text/css" href="//bbaren.scripts.mit.edu/urweb/6.947-static/forum/forum.css"/>
       </head>
       <body>
 	{content}

@@ -1,4 +1,7 @@
+allow url //bbaren.scripts.mit.edu/urweb/6.947-static/forum/forum.css
 allow env SSL_CLIENT_S_DN_CN
+rewrite style Main/Forum/questionList Forum/questionList
+rewrite style Main/Forum/questionMetadata Forum/questionMetadata
 
 $/option
 ../styles

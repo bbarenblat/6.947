@@ -23,6 +23,9 @@ end) = struct
 open Styles
 open Asker
 
+style questionList
+style questionMetadata
+
 table question : { Id : int,
 		   Title : string,
 		   Body : string,
@@ -36,7 +39,11 @@ val getName : transaction (option string) =
 
 fun prettyPrintQuestion row : xbody =
     <xml>
-      <p>{[row.Question.Title]}: {[row.Question.Body]} (asked by {[row.Question.Asker]})</p>
+      <li>
+	<h3>{[row.Question.Title]}</h3>
+	{[row.Question.Body]}
+	<span class={questionMetadata}>Asked by {[row.Question.Asker]}</span>
+      </li>
     </xml>
 
 fun main () : transaction page =
@@ -46,7 +53,9 @@ fun main () : transaction page =
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
 	    <p>All questions:</p>
-	    {newestQuestions}
+	    <ul class={questionList}>
+	      {newestQuestions}
+	    </ul>
 	    <p>Ask a new question:</p>
 	    <form>
 	      <textbox {#Title} size=80 /><br />
