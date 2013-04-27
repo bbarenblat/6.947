@@ -48,6 +48,21 @@ fun prettyPrintQuestion row : xbody =
       </li>
     </xml>
 
+val allQuestions : transaction page =
+    questionsList <- queryX (SELECT * FROM question
+				      ORDER BY Question.Id DESC)
+			    prettyPrintQuestion;
+    return (
+        Template.generic (Some "Forum – All questions") <xml>
+	  <div class={content}>
+	    <h2>All questions</h2>
+	    <ul class={questionList}>
+	      {questionsList}
+	    </ul>
+	  </div>
+	</xml>
+    )
+
 fun main () : transaction page =
     newestQuestions <- queryX (SELECT * FROM question
 					ORDER BY Question.Id DESC
@@ -61,6 +76,8 @@ fun main () : transaction page =
 	    <ul class={questionList}>
 	      {newestQuestions}
 	    </ul>
+	    <a link={allQuestions}>View all questions</a>
+
 	    <h2>Ask a new question</h2>
 	    <form>
 	      <textbox {#Title} placeholder="Title" class={questionEntryTitle} /><br />
