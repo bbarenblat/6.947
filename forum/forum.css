@@ -18,6 +18,7 @@
 
 .Forum_questionList {
     list-style-type: none;
+    margin-top: 0;
     padding-left: 0;
 }
 
@@ -25,13 +26,18 @@
     margin-bottom: 1em;
 }
 
-.Forum_questionList h3 {
-    font-size: 1.15em;
-    margin: 0;
-}
-
 .Forum_questionMetadata {
     padding-left: 2em;
     font-style: italic;
     color: hsl(0, 0%, 65%);
+}
+
+.Forum_questionEntryTitle, .Forum_questionEntryBody {
+    font-family: sans-serif;
+    font-size: 0.8em;
+    width: 40em;
+}
+
+.Forum_questionEntryBody {
+    height: 15em;
 }

@@ -25,6 +25,8 @@ open Asker
 
 style questionList
 style questionMetadata
+style questionEntryTitle
+style questionEntryBody
 
 table question : { Id : int,
 		   Title : string,
@@ -47,19 +49,22 @@ fun prettyPrintQuestion row : xbody =
     </xml>
 
 fun main () : transaction page =
-    newestQuestions <- queryX (SELECT * FROM question) prettyPrintQuestion;
+    newestQuestions <- queryX (SELECT * FROM question
+					ORDER BY Question.Id DESC
+					LIMIT 5)
+			      prettyPrintQuestion;
     askerOpt <- getName;
     return (
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
-	    <p>All questions:</p>
+	    <h2>Latest questions</h2>
 	    <ul class={questionList}>
 	      {newestQuestions}
 	    </ul>
-	    <p>Ask a new question:</p>
+	    <h2>Ask a new question</h2>
 	    <form>
-	      <textbox {#Title} size=80 /><br />
-	      <textarea {#Body} rows=12 cols=80 /><br />
+	      <textbox {#Title} placeholder="Title" class={questionEntryTitle} /><br />
+	      <textarea {#Body} class={questionEntryBody} /><br />
 	      Asking as:
 	      <select {#Asker}>
 	        {case askerOpt of
