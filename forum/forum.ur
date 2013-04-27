@@ -31,7 +31,8 @@ table question : { Id : int,
 sequence questionIdS
 
 (* Grabs real name out of MIT certificate. *)
-val getName = getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
+val getName : transaction (option string) =
+    getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
 
 fun prettyPrintQuestion row : xbody =
     <xml>
@@ -51,10 +52,12 @@ fun main () : transaction page =
 	      <textbox {#Title} size=80 /><br />
 	      <textarea {#Body} rows=12 cols=80 /><br />
 	      Asking as:
-	        <select {#Asker}>
-		  <option>{[askerOpt]}</option>
-		  <option>Anonymous</option>
-		</select>
+	      <select {#Asker}>
+	        {case askerOpt of
+		     None => <xml/>
+		   | Some nam => <xml><option>{[nam]}</option></xml>}
+		<option>Anonymous</option>
+	      </select>
 	      <submit action={ask} value="Ask" />
 	    </form>
 	  </div>
