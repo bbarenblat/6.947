@@ -39,7 +39,7 @@ fun getUrl (n : Config.pageName) : url =
 fun header (current : Config.pageName) : xbody =
     let fun item (target : Config.pageName) =
     	    if Variant.eq current target
-    	    then <xml><li class={active}>{getName target}</li></xml>
+    	    then <xml><li class={active}><a href={getUrl target}>{getName target}</a></li></xml>
     	    else <xml><li><a href={getUrl target}>{getName target}</a></li></xml>
     in
 	<xml>
