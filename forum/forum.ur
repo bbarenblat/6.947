@@ -31,7 +31,7 @@ style entryBody
 table entry : { Id : int,
 		References : option int,
 		Class : EntryClass.entryClass,
-		Title : string,
+		Title : option string,
 		Body : string,
 		Author : author
 	      } PRIMARY KEY Id
@@ -92,7 +92,7 @@ and reply qId submission =
 	 VALUES ({[id]},
 	         {[Some qId]},
 	         {[EntryClass.answer]},
-	         {[""]},
+	         {[None]},
 	         {[submission.Body]},
                  {[readError submission.Author]}));
     detail qId
@@ -164,7 +164,7 @@ and ask submission =
 	 VALUES ({[id]},
 	         {[None]},
 	         {[EntryClass.question]},
-	         {[submission.Title]},
+	         {[Some submission.Title]},
 	         {[submission.Body]},
                  {[readError submission.Author]}));
     main ()
