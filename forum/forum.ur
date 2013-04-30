@@ -29,6 +29,7 @@ style entryTitle
 style entryBody
 
 table entry : { Id : int,
+		References : option int,
 		Class : EntryClass.entryClass,
 		Title : string,
 		Body : string,
@@ -45,14 +46,29 @@ val getName : transaction (option string) =
 
 fun detail (id : int) : transaction page =
     authorOpt <- getName;
-    queryX (SELECT * FROM entry
-		     WHERE Entry.Class = {[EntryClass.question]}
-                     AND Entry.Id = {[id]}) (fn q =>
-        Template.generic (Some "Forum") <xml>
-         <div class={content}>
+    questionBlock <- queryX (SELECT * FROM entry
+				      WHERE Entry.Class = {[EntryClass.question]}
+					AND Entry.Id = {[id]}) (fn q =>
+         <xml>
            <h2>{[q.Entry.Title]}</h2>
            <p>{[q.Entry.Body]}</p>
            <p class={entryMetadata}>Asked by {[q.Entry.Author]}</p>
+	 </xml>);
+    answerBlock <- queryX (SELECT * FROM entry
+				    WHERE Entry.Class = {[EntryClass.answer]}
+				      AND Entry.References = {[Some id]}) (fn a =>
+         <xml>
+           <p>
+	     {[a.Entry.Body]}
+	     <span class={entryMetadata}>&mdash;{[a.Entry.Author]}</span>
+	   </p>
+	 </xml>);
+    return (
+        Template.generic (Some "Forum") <xml>
+         <div class={content}>
+	   {questionBlock}
+
+	   <div>{answerBlock}</div>
 
            <h3>Your answer</h3>
            <form>
@@ -72,8 +88,9 @@ fun detail (id : int) : transaction page =
 
 and reply qId submission =
     id <- nextval entryIdS;
-    dml (INSERT INTO entry (Id, Class, Title, Body, Author)
+    dml (INSERT INTO entry (Id, References, Class, Title, Body, Author)
 	 VALUES ({[id]},
+	         {[Some qId]},
 	         {[EntryClass.answer]},
 	         {[""]},
 	         {[submission.Body]},
@@ -143,8 +160,9 @@ fun main () : transaction page =
 
 and ask submission =
     id <- nextval entryIdS;
-    dml (INSERT INTO entry (Id, Class, Title, Body, Author)
+    dml (INSERT INTO entry (Id, References, Class, Title, Body, Author)
 	 VALUES ({[id]},
+	         {[None]},
 	         {[EntryClass.question]},
 	         {[submission.Title]},
 	         {[submission.Body]},

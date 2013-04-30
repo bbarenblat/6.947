@@ -102,7 +102,7 @@ h3 {
     margin: 0;
 }
 
-.content p:first-child:first-letter {
+.dropcap:first-letter {
     color: hsl(0, 90%, 35%);
     font-size: 3.3em;
     padding-right: 0.03em;
