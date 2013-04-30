@@ -1,8 +1,8 @@
-type asker = option string
+type author = option string
 
-val eq_asker = Option.eq
+val eq_author = Option.eq
 
-val show_asker =
+val show_author =
     mkShow (
         fn nameOpt =>
 	    case nameOpt of
@@ -10,7 +10,7 @@ val show_asker =
               | Some nam => nam
     )
 
-val read_asker =
+val read_author =
     let fun parse text =
 	    case text of
 		"Anonymous" => None
@@ -19,8 +19,8 @@ val read_asker =
 	mkRead parse (compose Some parse)
     end
 
-val sql_asker = sql_option_prim
+val sql_author = sql_option_prim
 
 val anonymous = None
 
-val namedAsker = Some
+val namedAuthor = Some

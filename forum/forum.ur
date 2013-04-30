@@ -21,7 +21,7 @@ functor Make(Template : sig
 end) = struct
 
 open Styles
-open Asker
+open Author
 
 style questionList
 style questionMetadata
@@ -31,7 +31,7 @@ style questionEntryBody
 table question : { Id : int,
 		   Title : string,
 		   Body : string,
-		   Asker : asker
+		   Author : author
 		 } PRIMARY KEY Id
 sequence questionIdS
 
@@ -44,7 +44,7 @@ fun prettyPrintQuestion row : xbody =
       <li>
 	<h3>{[row.Question.Title]}</h3>
 	{[row.Question.Body]}
-	<span class={questionMetadata}>Asked by {[row.Question.Asker]}</span>
+	<span class={questionMetadata}>Asked by {[row.Question.Author]}</span>
       </li>
     </xml>
 
@@ -83,7 +83,7 @@ fun main () : transaction page =
 	      <textbox {#Title} placeholder="Title" class={questionEntryTitle} /><br />
 	      <textarea {#Body} class={questionEntryBody} /><br />
 	      Asking as:
-	      <select {#Asker}>
+	      <select {#Author}>
 	        {case askerOpt of
 		     None => <xml/>
 		   | Some nam => <xml><option>{[nam]}</option></xml>}
@@ -97,8 +97,8 @@ fun main () : transaction page =
 
 and ask submission =
     id <- nextval questionIdS;
-    dml (INSERT INTO question (Id, Title, Body, Asker)
-	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readError submission.Asker]}));
+    dml (INSERT INTO question (Id, Title, Body, Author)
+	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readError submission.Author]}));
     main ()
 
 end
