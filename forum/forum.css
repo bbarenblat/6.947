@@ -16,28 +16,31 @@
   * You should have received a copy of the GNU Affero General Public License
   * along with 6.947.  If not, see <http://www.gnu.org/licenses/>. */
 
-.Forum_questionList {
+.Forum_entryList {
     list-style-type: none;
     margin-top: 0;
     padding-left: 0;
 }
 
-.Forum_questionList li {
+.Forum_entryList li {
     margin-bottom: 1em;
 }
 
-.Forum_questionMetadata {
-    padding-left: 2em;
+.Forum_entryMetadata {
     font-style: italic;
     color: hsl(0, 0%, 65%);
 }
 
-.Forum_questionEntryTitle, .Forum_questionEntryBody {
+li .Forum_entryMetadata {
+    padding-left: 2em;
+}
+
+.Forum_entryTitle, .Forum_entryBody {
     font-family: sans-serif;
     font-size: 0.8em;
     width: 40em;
 }
 
-.Forum_questionEntryBody {
+.Forum_entryBody {
     height: 15em;
 }

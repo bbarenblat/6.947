@@ -23,17 +23,17 @@ end) = struct
 open Styles
 open Author
 
-style questionList
-style questionMetadata
-style questionEntryTitle
-style questionEntryBody
+style entryList
+style entryMetadata
+style entryTitle
+style entryBody
 
-table question : { Id : int,
-		   Title : string,
-		   Body : string,
-		   Author : author
-		 } PRIMARY KEY Id
-sequence questionIdS
+table entry : { Id : int,
+		Title : string,
+		Body : string,
+		Author : author
+	      } PRIMARY KEY Id
+sequence entryIdS
 
 (* Grabs real name out of MIT certificate. *)
 val getName : transaction (option string) =
@@ -42,21 +42,21 @@ val getName : transaction (option string) =
 fun prettyPrintQuestion row : xbody =
     <xml>
       <li>
-	<h3>{[row.Question.Title]}</h3>
-	{[row.Question.Body]}
-	<span class={questionMetadata}>Asked by {[row.Question.Author]}</span>
+	<h3>{[row.Entry.Title]}</h3>
+	{[row.Entry.Body]}
+	<span class={entryMetadata}>Asked by {[row.Entry.Author]}</span>
       </li>
     </xml>
 
 val allQuestions : transaction page =
-    questionsList <- queryX (SELECT * FROM question
-				      ORDER BY Question.Id DESC)
+    questionsList <- queryX (SELECT * FROM entry
+				      ORDER BY Entry.Id DESC)
 			    prettyPrintQuestion;
     return (
         Template.generic (Some "Forum – All questions") <xml>
 	  <div class={content}>
 	    <h2>All questions</h2>
-	    <ul class={questionList}>
+	    <ul class={entryList}>
 	      {questionsList}
 	    </ul>
 	  </div>
@@ -64,8 +64,8 @@ val allQuestions : transaction page =
     )
 
 fun main () : transaction page =
-    newestQuestions <- queryX (SELECT * FROM question
-					ORDER BY Question.Id DESC
+    newestQuestions <- queryX (SELECT * FROM entry
+					ORDER BY Entry.Id DESC
 					LIMIT 5)
 			      prettyPrintQuestion;
     askerOpt <- getName;
@@ -73,15 +73,15 @@ fun main () : transaction page =
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
 	    <h2>Latest questions</h2>
-	    <ul class={questionList}>
+	    <ul class={entryList}>
 	      {newestQuestions}
 	    </ul>
 	    <a link={allQuestions}>View all questions</a>
 
 	    <h2>Ask a new question</h2>
 	    <form>
-	      <textbox {#Title} placeholder="Title" class={questionEntryTitle} /><br />
-	      <textarea {#Body} class={questionEntryBody} /><br />
+	      <textbox {#Title} placeholder="Title" class={entryTitle} /><br />
+	      <textarea {#Body} class={entryBody} /><br />
 	      Asking as:
 	      <select {#Author}>
 	        {case askerOpt of
@@ -96,8 +96,8 @@ fun main () : transaction page =
     )
 
 and ask submission =
-    id <- nextval questionIdS;
-    dml (INSERT INTO question (Id, Title, Body, Author)
+    id <- nextval entryIdS;
+    dml (INSERT INTO entry (Id, Title, Body, Author)
 	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readError submission.Author]}));
     main ()
 
