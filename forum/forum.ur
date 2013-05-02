@@ -58,34 +58,30 @@ fun queryColumn [tab ::: Name] [field ::: Name] [state ::: Type]
 fun getScore (questionId : int) : transaction Score.score =
     queryColumn (SELECT Vote.Value FROM vote
 				   WHERE Vote.QuestionId = {[questionId]})
-          Score.update
-          Score.undecided
+		Score.update
+		Score.undecided
 
 (***************************** Single questions ******************************)
 
 fun detail (id : int) : transaction page =
     authorOpt <- getName;
-    questionBlock <- queryX (SELECT * FROM entry
-				      WHERE Entry.Class = {[EntryClass.question]}
-					AND Entry.Id = {[id]}) (fn q =>
-         <xml>
-           <h2>{[q.Entry.Title]}</h2>
-           <p>{[q.Entry.Body]}</p>
-           <p class={entryMetadata}>Asked by {[q.Entry.Author]}</p>
-	 </xml>);
-    answerBlock <- queryX (SELECT * FROM entry
-				    WHERE Entry.Class = {[EntryClass.answer]}
-				      AND Entry.References = {[Some id]}) (fn a =>
-         <xml>
-           <p>
-	     {[a.Entry.Body]}
-	     <span class={entryMetadata}>&mdash;{[a.Entry.Author]}</span>
-	   </p>
-	 </xml>);
+    question <- oneRow1 (SELECT * FROM entry
+				  WHERE Entry.Class = {[EntryClass.question]}
+				    AND Entry.Id = {[id]});
+    answerBlock <- queryX1 (SELECT * FROM entry
+				     WHERE Entry.Class = {[EntryClass.answer]}
+				       AND Entry.References = {[Some id]})
+			   (fn answer =>
+        <xml><p>
+	  {[answer.Body]}
+	  <span class={entryMetadata}>&mdash;{[answer.Author]}</span>
+	</p></xml>);
     return (
         Template.generic (Some "Forum") <xml>
          <div class={content}>
-	   {questionBlock}
+           <h2>{[question.Title]}</h2>
+           <p>{[question.Body]}</p>
+           <p class={entryMetadata}>Asked by {[question.Author]}</p>
 
 	   <div>{answerBlock}</div>
 
@@ -102,8 +98,7 @@ fun detail (id : int) : transaction page =
              <submit action={reply id} value="Answer" />
            </form>
          </div>
-       </xml>
-    )
+       </xml>)
 
 and reply qId submission =
     id <- nextval entryIdS;
@@ -119,22 +114,20 @@ and reply qId submission =
 
 (**************************** Lists of questions *****************************)
 
-fun prettyPrintQuestion row score : xbody =
-    <xml>
-      <li>
-	<h3><a link={detail row.Entry.Id}>{[row.Entry.Title]}</a></h3>
-	{[row.Entry.Body]}
-	<span class={entryMetadata}>Asked by {[row.Entry.Author]}; score {[score]}</span>
-      </li>
-    </xml>
+fun prettyPrintQuestion entry : transaction xbody =
+    score <- getScore entry.Id;
+    return (
+        <xml><li>
+	  <h3><a link={detail entry.Id}>{[entry.Title]}</a></h3>
+	  {[entry.Body]}
+	  <span class={entryMetadata}>Asked by {[entry.Author]}; score {[score]}</span>
+	</li></xml>)
 
 val allQuestions : transaction page =
-    questionsList <- queryX' (SELECT * FROM entry
-				       WHERE Entry.Class = {[EntryClass.question]}
-				       ORDER BY Entry.Id DESC)
-			     (fn q =>
-				 score <- getScore q.Entry.Id;
-				 return (prettyPrintQuestion q score));
+    questionsList <- queryX1' (SELECT * FROM entry
+					WHERE Entry.Class = {[EntryClass.question]}
+					ORDER BY Entry.Id DESC)
+			      prettyPrintQuestion;
     return (
         Template.generic (Some "Forum – All questions") <xml>
 	  <div class={content}>
@@ -143,17 +136,14 @@ val allQuestions : transaction page =
 	      {questionsList}
 	    </ul>
 	  </div>
-	</xml>
-    )
+	</xml>)
 
 fun main () : transaction page =
-    newestQuestions <- queryX' (SELECT * FROM entry
-					WHERE Entry.Class = {[EntryClass.question]}
-					ORDER BY Entry.Id DESC
-					LIMIT 5)
-			      (fn q =>
-				  score <- getScore q.Entry.Id;
-				  return (prettyPrintQuestion q score));
+    newestQuestions <- queryX1' (SELECT * FROM entry
+					  WHERE Entry.Class = {[EntryClass.question]}
+					  ORDER BY Entry.Id DESC
+					  LIMIT 5)
+				prettyPrintQuestion;
     askerOpt <- getName;
     return (
         Template.generic (Some "Forum") <xml>
@@ -178,8 +168,7 @@ fun main () : transaction page =
 	      <submit action={ask} value="Ask" />
 	    </form>
 	  </div>
-	</xml>
-    )
+	</xml>)
 
 and ask submission =
     id <- nextval entryIdS;
