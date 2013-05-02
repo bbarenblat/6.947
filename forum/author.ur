@@ -1,26 +1,65 @@
-type author = option string
+(********************************** A user ***********************************)
 
-val eq_author = Option.eq
+type usernameOrAnonymous = option string
 
-val show_author =
+
+(*** Instances ***)
+
+val eq_usernameOrAnonymous = Option.eq
+
+val show_usernameOrAnonymous =
     mkShow (
         fn nameOpt =>
-	    case nameOpt of
-        	None => "Anonymous"
-              | Some nam => nam
-    )
+           case nameOpt of
+               None => "Anonymous"
+             | Some nam => nam)
 
 val read_author =
     let fun parse text =
-	    case text of
-		"Anonymous" => None
-	      | nam => Some nam
+           case text of
+               "Anonymous" => None
+             | nam => Some nam
     in
-	mkRead parse (compose Some parse)
+       mkRead parse (compose Some parse)
     end
 
-val sql_author = sql_option_prim
+val sql_usernameOrAnonymous = sql_option_prim
 
-val anonymous = None
 
-val namedAuthor = Some
+(*** Getting the username ***)
+
+val current =
+    addressOpt <- getenv (blessEnvVar "SSL_CLIENT_S_DN_Email");
+    (* SSL_CLIENT_EMAIL contains the user's entire e-mail address, including
+    the "@MIT.EDU" part.  Get rid of the domain name. *)
+    return (address <- addressOpt;
+    	    usernameAndDomain <- String.split address #"@";
+    	    return usernameAndDomain.1)
+
+
+(******************************* A named user ********************************)
+
+type username = string
+
+
+(*** Instances ***)
+
+val eq_username = eq_string
+
+val show_username = show_string
+
+val read_username = read_string
+
+val sql_username = sql_prim
+
+
+(******************************** Converting *********************************)
+
+fun name uOrA = uOrA
+
+val orAnonymous = Some
+
+fun toOptionTag [_use] uOrA =
+    case uOrA of
+	None => <xml/>
+      | Some u => <xml><option>{[u]}</option></xml>

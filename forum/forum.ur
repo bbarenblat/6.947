@@ -21,7 +21,6 @@ functor Make(Template : sig
 end) = struct
 
 open Styles
-open Author
 
 style entryList
 style entryMetadata
@@ -33,18 +32,14 @@ table entry : { Id : int,
 		Class : EntryClass.entryClass,
 		Title : option string,
 		Body : string,
-		Author : author
+		Author : Author.usernameOrAnonymous
 	      } PRIMARY KEY Id
 sequence entryIdS
 
 table vote : { QuestionId : int,
-	       Author : author,
+	       Author : Author.username,
 	       Value : Score.score
 	     }
-
-(* Grabs real name out of MIT certificate. *)
-val getName : transaction (option string) =
-    getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
 
 (* Like query1', but automatically dereferences the field *)
 fun queryColumn [tab ::: Name] [field ::: Name] [state ::: Type]
@@ -64,7 +59,7 @@ fun getScore (questionId : int) : transaction Score.score =
 (***************************** Single questions ******************************)
 
 fun detail (id : int) : transaction page =
-    authorOpt <- getName;
+    authorOpt <- Author.current;
     question <- oneRow1 (SELECT * FROM entry
 				  WHERE Entry.Class = {[EntryClass.question]}
 				    AND Entry.Id = {[id]});
@@ -90,9 +85,7 @@ fun detail (id : int) : transaction page =
              <textarea {#Body} class={entryBody} /><br />
              Answering as:
              <select {#Author}>
-               {case authorOpt of
-                    None => <xml/>
-                  | Some nam => <xml><option>{[nam]}</option></xml>}
+               {Author.toOptionTag authorOpt}
                <option>Anonymous</option>
              </select>
              <submit action={reply id} value="Answer" />
@@ -144,7 +137,7 @@ fun main () : transaction page =
 					  ORDER BY Entry.Id DESC
 					  LIMIT 5)
 				prettyPrintQuestion;
-    askerOpt <- getName;
+    askerOpt <- Author.current;
     return (
         Template.generic (Some "Forum") <xml>
 	  <div class={content}>
@@ -160,9 +153,7 @@ fun main () : transaction page =
 	      <textarea {#Body} class={entryBody} /><br />
 	      Asking as:
 	      <select {#Author}>
-	        {case askerOpt of
-		     None => <xml/>
-		   | Some nam => <xml><option>{[nam]}</option></xml>}
+	        {Author.toOptionTag askerOpt}
 		<option>Anonymous</option>
 	      </select>
 	      <submit action={ask} value="Ask" />

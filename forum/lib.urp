@@ -1,9 +1,12 @@
 allow url //bbaren.scripts.mit.edu/urweb/6.947-static/forum/forum.css
 allow env SSL_CLIENT_S_DN_CN
+allow env SSL_CLIENT_S_DN_Email
+allow env *
 rewrite style Main/Forum/* Forum/
 rewrite style Main/Forum/ Forum/
 
 $/option
+$/string
 ../styles
 author
 entryClass
