@@ -29,6 +29,7 @@ style entryTitle
 style entryBody
 
 table entry : { Id : int,
+		Class : EntryClass.entryClass,
 		Title : string,
 		Body : string,
 		Author : author
@@ -39,10 +40,53 @@ sequence entryIdS
 val getName : transaction (option string) =
     getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
 
+
+(***************************** Single questions ******************************)
+
+fun detail (id : int) : transaction page =
+    authorOpt <- getName;
+    queryX (SELECT * FROM entry
+		     WHERE Entry.Class = {[EntryClass.question]}
+                     AND Entry.Id = {[id]}) (fn q =>
+        Template.generic (Some "Forum") <xml>
+         <div class={content}>
+           <h2>{[q.Entry.Title]}</h2>
+           <p>{[q.Entry.Body]}</p>
+           <p class={entryMetadata}>Asked by {[q.Entry.Author]}</p>
+
+           <h3>Your answer</h3>
+           <form>
+             <textarea {#Body} class={entryBody} /><br />
+             Answering as:
+             <select {#Author}>
+               {case authorOpt of
+                    None => <xml/>
+                  | Some nam => <xml><option>{[nam]}</option></xml>}
+               <option>Anonymous</option>
+             </select>
+             <submit action={reply id} value="Answer" />
+           </form>
+         </div>
+       </xml>
+    )
+
+and reply qId submission =
+    id <- nextval entryIdS;
+    dml (INSERT INTO entry (Id, Class, Title, Body, Author)
+	 VALUES ({[id]},
+	         {[EntryClass.answer]},
+	         {[""]},
+	         {[submission.Body]},
+                 {[readError submission.Author]}));
+    detail qId
+
+
+(**************************** Lists of questions *****************************)
+
 fun prettyPrintQuestion row : xbody =
     <xml>
       <li>
-	<h3>{[row.Entry.Title]}</h3>
+	<h3><a link={detail row.Entry.Id}>{[row.Entry.Title]}</a></h3>
 	{[row.Entry.Body]}
 	<span class={entryMetadata}>Asked by {[row.Entry.Author]}</span>
       </li>
@@ -50,6 +94,7 @@ fun prettyPrintQuestion row : xbody =
 
 val allQuestions : transaction page =
     questionsList <- queryX (SELECT * FROM entry
+				      WHERE Entry.Class = {[EntryClass.question]}
 				      ORDER BY Entry.Id DESC)
 			    prettyPrintQuestion;
     return (
@@ -65,6 +110,7 @@ val allQuestions : transaction page =
 
 fun main () : transaction page =
     newestQuestions <- queryX (SELECT * FROM entry
+					WHERE Entry.Class = {[EntryClass.question]}
 					ORDER BY Entry.Id DESC
 					LIMIT 5)
 			      prettyPrintQuestion;
@@ -97,8 +143,12 @@ fun main () : transaction page =
 
 and ask submission =
     id <- nextval entryIdS;
-    dml (INSERT INTO entry (Id, Title, Body, Author)
-	 VALUES ({[id]}, {[submission.Title]}, {[submission.Body]}, {[readError submission.Author]}));
+    dml (INSERT INTO entry (Id, Class, Title, Body, Author)
+	 VALUES ({[id]},
+	         {[EntryClass.question]},
+	         {[submission.Title]},
+	         {[submission.Body]},
+                 {[readError submission.Author]}));
     main ()
 
 end

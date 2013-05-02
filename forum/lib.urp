@@ -6,4 +6,5 @@ rewrite style Main/Forum/ Forum/
 $/option
 ../styles
 author
+entryClass
 forum
