@@ -37,10 +37,29 @@ table entry : { Id : int,
 	      } PRIMARY KEY Id
 sequence entryIdS
 
+table vote : { QuestionId : int,
+	       Author : author,
+	       Value : Score.score
+	     }
+
 (* Grabs real name out of MIT certificate. *)
 val getName : transaction (option string) =
     getenv (blessEnvVar "SSL_CLIENT_S_DN_CN")
 
+(* Like query1', but automatically dereferences the field *)
+fun queryColumn [tab ::: Name] [field ::: Name] [state ::: Type]
+		(q : sql_query [] [] [tab = [field = state]] [])
+		(f : state -> state -> state)
+		(initial : state)
+    : transaction state =
+    query q (fn row state => return (f row.tab.field state)) initial
+
+(* Sum all the votes on a single question. *)
+fun getScore (questionId : int) : transaction Score.score =
+    queryColumn (SELECT Vote.Value FROM vote
+				   WHERE Vote.QuestionId = {[questionId]})
+          Score.update
+          Score.undecided
 
 (***************************** Single questions ******************************)
 
@@ -100,20 +119,22 @@ and reply qId submission =
 
 (**************************** Lists of questions *****************************)
 
-fun prettyPrintQuestion row : xbody =
+fun prettyPrintQuestion row score : xbody =
     <xml>
       <li>
 	<h3><a link={detail row.Entry.Id}>{[row.Entry.Title]}</a></h3>
 	{[row.Entry.Body]}
-	<span class={entryMetadata}>Asked by {[row.Entry.Author]}</span>
+	<span class={entryMetadata}>Asked by {[row.Entry.Author]}; score {[score]}</span>
       </li>
     </xml>
 
 val allQuestions : transaction page =
-    questionsList <- queryX (SELECT * FROM entry
-				      WHERE Entry.Class = {[EntryClass.question]}
-				      ORDER BY Entry.Id DESC)
-			    prettyPrintQuestion;
+    questionsList <- queryX' (SELECT * FROM entry
+				       WHERE Entry.Class = {[EntryClass.question]}
+				       ORDER BY Entry.Id DESC)
+			     (fn q =>
+				 score <- getScore q.Entry.Id;
+				 return (prettyPrintQuestion q score));
     return (
         Template.generic (Some "Forum – All questions") <xml>
 	  <div class={content}>
@@ -126,11 +147,13 @@ val allQuestions : transaction page =
     )
 
 fun main () : transaction page =
-    newestQuestions <- queryX (SELECT * FROM entry
+    newestQuestions <- queryX' (SELECT * FROM entry
 					WHERE Entry.Class = {[EntryClass.question]}
 					ORDER BY Entry.Id DESC
 					LIMIT 5)
-			      prettyPrintQuestion;
+			      (fn q =>
+				  score <- getScore q.Entry.Id;
+				  return (prettyPrintQuestion q score));
     askerOpt <- getName;
     return (
         Template.generic (Some "Forum") <xml>
