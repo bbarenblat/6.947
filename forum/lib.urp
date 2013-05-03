@@ -6,6 +6,7 @@ rewrite style Main/Forum/* Forum/
 rewrite style Main/Forum/ Forum/
 
 $/option
+myOption
 $/string
 ../styles
 author

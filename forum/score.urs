@@ -24,3 +24,8 @@ val update : score -> score -> score
 (******************************** Conversion *********************************)
 
 val toInt : score -> int
+
+
+(****************************** Pretty-printing ******************************)
+
+val withUnits : score -> string -> string

@@ -26,6 +26,7 @@ style entryList
 style entryMetadata
 style entryTitle
 style entryBody
+style voting
 
 table entry : { Id : int,
 		References : option int,
@@ -40,6 +41,8 @@ table vote : { QuestionId : int,
 	       Author : Author.username,
 	       Value : Score.score
 	     }
+    CONSTRAINT OneVotePerEntry UNIQUE (QuestionId, Author),
+    CONSTRAINT RefersToEntry FOREIGN KEY QuestionId REFERENCES entry(Id)
 
 (* Like query1', but automatically dereferences the field *)
 fun queryColumn [tab ::: Name] [field ::: Name] [state ::: Type]
@@ -56,27 +59,51 @@ fun getScore (questionId : int) : transaction Score.score =
 		Score.update
 		Score.undecided
 
+fun recordVote (value : Score.score) (entryId : int) _formData : transaction page =
+    authorOpt <- Author.current;
+    (* If the user didn't exist, the user should not have been allowed to vote
+    in the first place. *)
+    let val author = Author.nameError authorOpt
+    in
+	dml (INSERT INTO vote (QuestionId, Author, Value)
+	     VALUES ({[entryId]}, {[author]}, {[value]}));
+	detail entryId
+    end
+
+and upvote entryId _formData = recordVote Score.insightful entryId _formData
+
+
+
 (***************************** Single questions ******************************)
 
-fun detail (id : int) : transaction page =
+and detail (id : int) : transaction page =
     authorOpt <- Author.current;
     question <- oneRow1 (SELECT * FROM entry
 				  WHERE Entry.Class = {[EntryClass.question]}
 				    AND Entry.Id = {[id]});
-    answerBlock <- queryX1 (SELECT * FROM entry
+    score <- getScore id;
+    answerBlock <- queryX1' (SELECT * FROM entry
 				     WHERE Entry.Class = {[EntryClass.answer]}
 				       AND Entry.References = {[Some id]})
 			   (fn answer =>
-        <xml><p>
-	  {[answer.Body]}
-	  <span class={entryMetadata}>&mdash;{[answer.Author]}</span>
-	</p></xml>);
+	score <- getScore answer.Id;
+	return (
+            <xml><p>
+	      {[answer.Body]}
+	      <span class={entryMetadata}>&mdash;{[answer.Author]} ({[Score.withUnits score "point"]})</span>
+	    </p></xml>));
     return (
         Template.generic (Some "Forum") <xml>
          <div class={content}>
            <h2>{[question.Title]}</h2>
            <p>{[question.Body]}</p>
-           <p class={entryMetadata}>Asked by {[question.Author]}</p>
+           <p class={entryMetadata}>
+	     Asked by {[question.Author]} ({[Score.withUnits score "point"]})
+	   </p>
+	   {Author.whenIdentified authorOpt
+		<xml>
+		  <form class={voting}><submit action={upvote id} value="⬆" /></form>
+		</xml>}
 
 	   <div>{answerBlock}</div>
 
@@ -85,7 +112,7 @@ fun detail (id : int) : transaction page =
              <textarea {#Body} class={entryBody} /><br />
              Answering as:
              <select {#Author}>
-               {Author.toOptionTag authorOpt}
+	       {Author.whenIdentified' authorOpt (fn u => <xml><option>{[u]}</option></xml>)}
                <option>Anonymous</option>
              </select>
              <submit action={reply id} value="Answer" />
@@ -113,7 +140,7 @@ fun prettyPrintQuestion entry : transaction xbody =
         <xml><li>
 	  <h3><a link={detail entry.Id}>{[entry.Title]}</a></h3>
 	  {[entry.Body]}
-	  <span class={entryMetadata}>Asked by {[entry.Author]}; score {[score]}</span>
+	  <span class={entryMetadata}>Asked by {[entry.Author]} ({[Score.withUnits score "point"]})</span>
 	</li></xml>)
 
 val allQuestions : transaction page =
@@ -153,7 +180,8 @@ fun main () : transaction page =
 	      <textarea {#Body} class={entryBody} /><br />
 	      Asking as:
 	      <select {#Author}>
-	        {Author.toOptionTag askerOpt}
+		{Author.whenIdentified' askerOpt (fn u =>
+		     <xml><option>{[u]}</option></xml>)}
 		<option>Anonymous</option>
 	      </select>
 	      <submit action={ask} value="Ask" />

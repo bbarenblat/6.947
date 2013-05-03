@@ -43,8 +43,16 @@ val sql_username : sql_injectable username
 (******************************** Converting *********************************)
 
 val name : usernameOrAnonymous -> option username
+val nameError : usernameOrAnonymous -> username
 
 val orAnonymous : username -> usernameOrAnonymous
+
+val whenIdentified : ctx ::: {Unit} -> use ::: {Type} ->
+		     usernameOrAnonymous -> xml ctx use [] -> xml ctx use []
+
+val whenIdentified' : ctx ::: {Unit} -> use ::: {Type} ->
+		      usernameOrAnonymous -> (username -> xml ctx use [])
+		      -> xml ctx use []
 
 (* Converts a 'usernameOrAnonymous' to an 'option' tag.  If anonymous, produces
 empty XML. *)

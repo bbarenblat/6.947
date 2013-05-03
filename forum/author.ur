@@ -57,7 +57,21 @@ val sql_username = sql_prim
 
 fun name uOrA = uOrA
 
+val nameError = MyOption.getError
+
 val orAnonymous = Some
+
+(* I can't express this in terms of whenIdentified'--I get a "substitution in
+constructor is blocked by a too-deep unification variable." *)
+fun whenIdentified [ctx] [use] uOrA text =
+    case uOrA of
+	None => <xml/>
+      | Some u => text
+
+fun whenIdentified' [ctx] [use] uOrA generator =
+    case uOrA of
+	None => <xml/>
+      | Some u => generator u
 
 fun toOptionTag [_use] uOrA =
     case uOrA of

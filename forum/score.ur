@@ -15,3 +15,8 @@ val undecided = 0
 val inane = -1
 
 fun toInt s = s
+
+fun withUnits s base =
+    show s ^ " " ^ (case s of
+			1 => base
+		      | _ => base ^ "s")

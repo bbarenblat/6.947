@@ -27,6 +27,7 @@
 }
 
 .Forum_entryMetadata {
+    display: inline;
     font-style: italic;
     color: hsl(0, 0%, 65%);
 }
@@ -43,4 +44,8 @@ li .Forum_entryMetadata {
 
 .Forum_entryBody {
     height: 15em;
+}
+
+.Forum_voting, .Forum_voting * {
+    display: inline;
 }
