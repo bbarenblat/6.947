@@ -70,15 +70,31 @@ fun recordVote (value : Score.score) (entryId : int) _formData : transaction pag
     in the first place. *)
     let val author = Author.nameError authorOpt
     in
-	alreadyVoted <- hasRows (SELECT Vote.Value FROM vote
-						   WHERE Vote.QuestionId = {[entryId]}
-						     AND Vote.Author = {[author]});
-	unless alreadyVoted (dml (INSERT INTO vote (QuestionId, Author, Value)
-				  VALUES ({[entryId]}, {[author]}, {[value]})));
+	existingVote <- oneOrNoRows1 (SELECT Vote.Value FROM vote
+							WHERE Vote.QuestionId = {[entryId]}
+							  AND Vote.Author = {[author]});
+	(* This mimics Reddit's upvote/downvote behavior, which is a bizarrely
+	complex state machine that is nonetheless totally intuitive, especially
+	when you're using an AJAXy interface.  TODO: Write an AJAXy
+	interface. *)
+	(case existingVote of
+	     None => dml (INSERT INTO vote (QuestionId, Author, Value)
+			  VALUES ({[entryId]}, {[author]}, {[value]}))
+	   | Some v =>
+	     if v.Value = value
+	     then dml (DELETE FROM vote
+		       WHERE QuestionId = {[entryId]}
+			 AND Author = {[author]})
+	     else dml (UPDATE vote
+		       SET Value = {[value]}
+		       WHERE QuestionId = {[entryId]}
+			 AND Author = {[author]}));
 	detail entryId
     end
 
 and upvote entryId _formData = recordVote Score.insightful entryId _formData
+
+and downvote entryId _formData = recordVote Score.inane entryId _formData
 
 
 
@@ -111,6 +127,7 @@ and detail (id : int) : transaction page =
 	   {Author.whenIdentified authorOpt
 		<xml>
 		  <form class={voting}><submit action={upvote id} value="⬆" /></form>
+		  <form class={voting}><submit action={downvote id} value="⬇" /></form>
 		</xml>}
 
 	   <div>{answerBlock}</div>
