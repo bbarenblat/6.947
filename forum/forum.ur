@@ -52,7 +52,8 @@ fun queryColumn [tab ::: Name] [field ::: Name] [state ::: Type]
     : transaction state =
     query q (fn row state => return (f row.tab.field state)) initial
 
-fun unless [m ::: Type -> Type] (_ : monad m) (cond : bool) (computation : m {}) =
+fun unless [m ::: Type -> Type] (_ : monad m)
+	   (cond : bool) (computation : m {}) =
     if cond
     then return ()
     else computation
@@ -70,9 +71,10 @@ fun recordVote (value : Score.score) (entryId : int) _formData : transaction pag
     in the first place. *)
     let val author = Author.nameError authorOpt
     in
-	existingVote <- oneOrNoRows1 (SELECT Vote.Value FROM vote
-							WHERE Vote.QuestionId = {[entryId]}
-							  AND Vote.Author = {[author]});
+	existingVote <-
+	    oneOrNoRows1 (SELECT Vote.Value FROM vote
+					    WHERE Vote.QuestionId = {[entryId]}
+					      AND Vote.Author = {[author]});
 	(* This mimics Reddit's upvote/downvote behavior, which is a bizarrely
 	complex state machine that is nonetheless totally intuitive, especially
 	when you're using an AJAXy interface.  TODO: Write an AJAXy
@@ -114,7 +116,9 @@ and detail (id : int) : transaction page =
 	return (
             <xml><p>
 	      {[answer.Body]}
-	      <span class={entryMetadata}>&mdash;{[answer.Author]} ({[Score.withUnits score "point"]})</span>
+	      <span class={entryMetadata}>
+		&mdash;{[answer.Author]} ({[Score.withUnits score "point"]})
+	      </span>
 	    </p></xml>));
     return (
         Template.generic (Some "Forum") <xml>
@@ -126,8 +130,12 @@ and detail (id : int) : transaction page =
 	   </p>
 	   {Author.whenIdentified authorOpt
 		<xml>
-		  <form class={voting}><submit action={upvote id} value="⬆" /></form>
-		  <form class={voting}><submit action={downvote id} value="⬇" /></form>
+		  <form class={voting}>
+		    <submit action={upvote id} value="⬆" />
+		  </form>
+		  <form class={voting}>
+		    <submit action={downvote id} value="⬇" />
+		  </form>
 		</xml>}
 
 	   <div>{answerBlock}</div>
@@ -137,7 +145,8 @@ and detail (id : int) : transaction page =
              <textarea {#Body} class={entryBody} /><br />
              Answering as:
              <select {#Author}>
-	       {Author.whenIdentified' authorOpt (fn u => <xml><option>{[u]}</option></xml>)}
+	       {Author.whenIdentified' authorOpt (fn u =>
+		    <xml><option>{[u]}</option></xml>)}
                <option>Anonymous</option>
              </select>
              <submit action={reply id} value="Answer" />
@@ -165,14 +174,17 @@ fun prettyPrintQuestion entry : transaction xbody =
         <xml><li>
 	  <h3><a link={detail entry.Id}>{[entry.Title]}</a></h3>
 	  {[entry.Body]}
-	  <span class={entryMetadata}>Asked by {[entry.Author]} ({[Score.withUnits score "point"]})</span>
+	  <span class={entryMetadata}>
+	    Asked by {[entry.Author]} ({[Score.withUnits score "point"]})
+	  </span>
 	</li></xml>)
 
 val allQuestions : transaction page =
-    questionsList <- queryX1' (SELECT * FROM entry
-					WHERE Entry.Class = {[EntryClass.question]}
-					ORDER BY Entry.Id DESC)
-			      prettyPrintQuestion;
+    questionsList <-
+        queryX1' (SELECT * FROM entry
+			   WHERE Entry.Class = {[EntryClass.question]}
+			   ORDER BY Entry.Id DESC)
+		 prettyPrintQuestion;
     return (
         Template.generic (Some "Forum – All questions") <xml>
 	  <div class={content}>
@@ -184,11 +196,12 @@ val allQuestions : transaction page =
 	</xml>)
 
 fun main () : transaction page =
-    newestQuestions <- queryX1' (SELECT * FROM entry
-					  WHERE Entry.Class = {[EntryClass.question]}
-					  ORDER BY Entry.Id DESC
-					  LIMIT 5)
-				prettyPrintQuestion;
+    newestQuestions <-
+        queryX1' (SELECT * FROM entry
+			   WHERE Entry.Class = {[EntryClass.question]}
+			   ORDER BY Entry.Id DESC
+			   LIMIT 5)
+		 prettyPrintQuestion;
     askerOpt <- Author.current;
     return (
         Template.generic (Some "Forum") <xml>
