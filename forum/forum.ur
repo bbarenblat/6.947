@@ -52,6 +52,11 @@ fun queryColumn [tab ::: Name] [field ::: Name] [state ::: Type]
     : transaction state =
     query q (fn row state => return (f row.tab.field state)) initial
 
+fun unless [m ::: Type -> Type] (_ : monad m) (cond : bool) (computation : m {}) =
+    if cond
+    then return ()
+    else computation
+
 (* Sum all the votes on a single question. *)
 fun getScore (questionId : int) : transaction Score.score =
     queryColumn (SELECT Vote.Value FROM vote
@@ -65,8 +70,11 @@ fun recordVote (value : Score.score) (entryId : int) _formData : transaction pag
     in the first place. *)
     let val author = Author.nameError authorOpt
     in
-	dml (INSERT INTO vote (QuestionId, Author, Value)
-	     VALUES ({[entryId]}, {[author]}, {[value]}));
+	alreadyVoted <- hasRows (SELECT Vote.Value FROM vote
+						   WHERE Vote.QuestionId = {[entryId]}
+						     AND Vote.Author = {[author]});
+	unless alreadyVoted (dml (INSERT INTO vote (QuestionId, Author, Value)
+				  VALUES ({[entryId]}, {[author]}, {[value]})));
 	detail entryId
     end
 
